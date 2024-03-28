@@ -1,0 +1,15 @@
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.csproj.AssemblyReference.cache
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.AssemblyInfoInputs.cache
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.AssemblyInfo.cs
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.csproj.CoreCompileInputs.cache
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\bin\Debug\net6.0\exec1.exe
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\bin\Debug\net6.0\exec1.deps.json
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\bin\Debug\net6.0\exec1.runtimeconfig.json
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\bin\Debug\net6.0\exec1.dll
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\bin\Debug\net6.0\exec1.pdb
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.dll
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\refint\exec1.dll
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.pdb
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\exec1.genruntimeconfig.cache
+C:\Users\USER\OneDrive\Documents\Atida_proj\Atida_SapphireFrommer_208664169\exec1\obj\Debug\net6.0\ref\exec1.dll

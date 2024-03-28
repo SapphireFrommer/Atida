@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>new covid report</title>
+</head>
+<body>
+    <h1>New Patient Form</h1>
+    <h2>Insert the new patient's data</h2>
+    <form id="covidForm" action="/">
+        <div class="input-control">
+          <lable for="first_name">First name:</lable>
+          <input type="text" name = "first_name" placeholder="type first name" id="first_name" required>
+          <div class="error"></div>
+        </div>
+        <div class="input-control">
+          <lable for="last_name">Last name:</lable>
+          <input type="text" name = "last_name" placeholder="type last name" id="last_name" required>
+          <div class="error"></div>
+        </div>
+        <!--insert the check digit logic here!-->
+        <div class="input-control">
+          <lable for="id_num">ID (9 digits):</lable>
+          <input type="text" name = "id_num" placeholder="123456789" id="id_num" required>
+          <span id="id_num-error" class="error"></span>
+          <div class="error"></div>
+        </div>
+         <!--insert the date check here! not later than current time, not before 200 years-->
+        <div class="input-control">
+          <lable for="birth_date">Date of birth:</lable>
+          <input type="date" id="birth_date">
+          <div class="error"></div>
+        </div>
+        <!--<lable for="pic">Patient's picture:</lable>
+        <input type="file" id="pic">-->
+
+        <h3>Address:</h3>
+        <div class="input-control">
+          <lable for="city">City:</lable>
+          <input type="text" placeholder="type city" id="city">
+          <div class="error"></div>
+        </div>
+        <div class="input-control">
+          <lable for="street">Street:</lable>
+          <input type="text" placeholder="type street" id="street">
+          <div class="error"></div>
+        </div>
+        <div class="input-control">
+          <lable for="house_num">House number:</lable>
+          <input type="number" placeholder="type house num" id="house_num" min="1">
+          <div class="error"></div>
+        </div>
+
+        <h3>Contact info:</h3>
+        <!--insert the phone number logic here! check vallidity of phone number,
+            make sure that at leat one type was inserted-->
+        <div class="input-control">
+          <lable for="house_phone">Phone number:</lable>
+          <input type="text" placeholder="type house phone" id="house_phone">
+          <div class="error"></div>
+        </div>
+        <div class="input-control">
+          <lable for="cellphone">Cell phone number:</lable>
+          <input type="text" placeholder="type cell phone" id="cellphone">
+          <div class="error"></div>
+        </div>
+
+        <h2>Covid info</h2>
+        
+        <h3>vaccines:</h3>
+        <table id="vaccines_table">
+            <tr>
+                <th>Date</th>
+                <th>Manufacturer</th>
+            </tr>
+            <!--Add rows as we go logic, if there is time. for now add 4 rows that are not required-->
+            <!--the available vaccines types in Israel from https://corona.health.gov.il/vaccine-for-covid/-->
+            <tr>
+                <td><input type="date" id="vaccine_date" name="vaccine_date" class="vaccines_row"></td>
+                <td><select name="Manufacturer" id="manuf" class="vaccines_row">
+                  <option value="na">N/A</option>
+                  <option value="Pfizer">Pfizer</option>
+                  <option value="Moderna">Moderna</option>
+                  <option value="AstraZeneca">AstraZeneca PLC</option>
+                  <option value="NovaVax">NovaVax</option>
+                </select></td>
+            </tr>
+        </table>
+        <button type="button" onclick="addRow()">Add another vaccine</button>
+        <h3>Sickness duration:</h3>
+        <!--insert the date logic here! - should be after birth-->
+        <div class="input-control">
+          <lable for="sick_start">First positive test date:</lable>
+          <input type="date" name="sick_start" id="sick_start">
+          <div class="error"></div>
+        </div>
+        <!--insert the date logic here! - should be after sick start-->
+        <div class="input-control">
+          <lable for="sick_end">Recovery date (second negative test day):</lable>
+          <input type="date" name="sick_end" id="sick_end">
+          <div class="error"></div>
+        </div>
+
+        <p><button type="submit">Submit</button></p>
+
+    </form>
+
+    <!--validator script-->
+    <script>
+      //get all fields to check, and the form:
+      const form = document.getElementById('covidForm');
+      const first_name = document.getElementById('first_name');
+      const last_name = document.getElementById('last_name');
+      const id_num = document.getElementById('id_num');
+      const birth_date = document.getElementById('birth_date');
+      const city = document.getElementById('city');
+      const street = document.getElementById('street');
+      const house_num = document.getElementById('house_num');
+      const house_phone = document.getElementById('house_phone');
+      const cellphone = document.getElementById('cellphone');
+      const sick_start = document.getElementById('sick_start');
+      const sick_end = document.getElementById('sick_end');
+
+      //prevent the default submit behavior:
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        validateInputs(); //update all divs sucess and errors
+        await handleSubmit();
+      });
+
+      const setError = (element, message) => {
+        const inputControl = element.parentElement;
+        const errorDisplay = inputControl.querySelector('.error');
+
+        errorDisplay.innerText = message;
+        inputControl.classList.add('error');
+        inputControl.classList.remove('success');
+      }
+
+      const setSuccess = element => {
+        const inputControl = element.parentElement;
+        const errorDisplay = inputControl.querySelector('.error');
+
+        errorDisplay.innerText = '';
+        inputControl.classList.add('success');
+        inputControl.classList.remove('error');
+      }
+
+      const isNumber = inputString => {
+        return /^[0-9]+$/.test(inputString);
+      }
+
+      const isCheckDigitValid = idNumValue => {
+        //if we reached here, we alreaady checked the id is a 9 digits number
+        let total = 0;
+        for (let i = 0; i < 9; i++) {
+          const digit = parseInt(idNumValue[i], 10);
+          //weight - 1 for the even places digits, 2 for the others
+          //the check digit is not multiplied (it is also in an even position
+          // - 8 - no special treatment necessary)
+          if(i%2 === 0) {
+            total += digit;
+          }
+          else {
+            total += 2*digit;
+          }
+        }
+        //after adding all weights, the check digit should complete
+          //to a multiplier of 10
+          //console.log(total)
+          return (total%10 === 0);
+      }
+
+      function curDate() {
+        const currentDate = new Date();
+        let dd = currentDate.getDate();
+        let mm = currentDate.getMonth() + 1;
+        const yyyy = currentDate.getFullYear();
+
+        if (dd < 10) {
+          dd = '0' + dd;
+        }
+
+        if (mm < 10) {
+          mm = '0' + mm;
+        }
+
+        return(`${yyyy}-${mm}-${dd}`);
+      }
+
+      const isDateABeforeDateB = (dateA, dateB) => {
+        //year
+        let evalA = parseInt(dateA.substring(0,4));
+        let evalB = parseInt(dateB.substring(0,4));
+        if(evalA < evalB){
+          return true;
+        }
+        if(evalA > evalB){
+          return false;
+        }
+        //month
+        evalA = parseInt(dateA.substring(5,7));
+        evalB = parseInt(dateB.substring(5,7));
+        if(evalA < evalB){
+          return true;
+        }
+        if(evalA > evalB){
+          return false;
+        }
+        //day
+        evalA = parseInt(dateA.substring(8));
+        evalB = parseInt(dateB.substring(8));
+        if(evalA < evalB){
+          return true;
+        }
+        if(evalA > evalB){
+          return false;
+        }
+        //they are the same day - 
+        return false;
+      }
+
+      const phone2IsraeliNum = phoneValue => {
+        let fixedString = phoneValue;
+        //fixing to a local Israeli number
+        if(phoneValue.substring(0,4) === '+972'){
+          fixedString = '0' + phoneValue.substring(4);
+        }
+        //remove all '-' from the number (g just means global search)
+        const regex = new RegExp('-', 'g');
+        fixedString = fixedString.replace(regex, '');
+        //check if the remaining string is only numbers
+        if(!isNumber(fixedString)){
+          return '';
+        }
+        return fixedString;
+      }
+
+      const validHousePhone = housePhoneValue => {
+        let housePhoneNum = phone2IsraeliNum(housePhoneValue);
+        if(!housePhoneNum){
+          return '';
+        }
+        //from wikipedia, acceptable phone numbers -
+          //https://he.wikipedia.org/wiki/%D7%A7%D7%99%D7%93%D7%95%D7%9E%D7%AA_%D7%98%D7%9C%D7%A4%D7%95%D7%9F_%D7%91%D7%99%D7%A9%D7%A8%D7%90%D7%9C
+        const options = ['09', '08', '04', '03', '02'];
+        if(housePhoneNum.length === 9 && options.includes(housePhoneNum.substring(0,2))){
+          return housePhoneNum;
+        }
+        if(housePhoneNum.length === 10 && housePhoneNum.substring(0,2) === '07'){
+          return housePhoneNum;
+        }
+        //if we reached here, the phone number is not an Israeli valid house number
+        return '';
+      }
+
+      const validcellphone = cellphoneValue => {
+        let cellPhoneNum = phone2IsraeliNum(cellphoneValue);
+        if(!cellPhoneNum){
+          return '';
+        }
+        //from wikipedia, acceptable phone numbers -
+          //https://he.wikipedia.org/wiki/%D7%A7%D7%99%D7%93%D7%95%D7%9E%D7%AA_%D7%98%D7%9C%D7%A4%D7%95%D7%9F_%D7%91%D7%99%D7%A9%D7%A8%D7%90%D7%9C
+        if(cellPhoneNum.length === 10 && cellPhoneNum.substring(0,2) === '05'){
+          return cellPhoneNum;
+        }
+        //if we reached here, the phone number is not an Israeli valid cellphone number
+        return '';
+      }
+
+      function addRow(){
+        const vaccines_table = document.getElementById('vaccines_table');
+        if(vaccines_table.childElementCount < 4){
+          //create a new table row -
+          const newRow = document.createElement('tr');
+          newRow.innerHTML = `
+          <td><input type="date" id="vaccine_date" name="vaccine_date" class="vaccines_row"></td>
+          <td><select name="Manufacturer" id="manuf" class="vaccines_row">
+            <option value="na">N/A</option>
+            <option value="Pfizer">Pfizer</option>
+            <option value="Moderna">Moderna</option>
+            <option value="AstraZeneca">AstraZeneca PLC</option>
+            <option value="NovaVax">NovaVax</option>
+          </select></td>
+          `;
+          vaccines_table.appendChild(newRow);
+        } else {
+          alert("max 4 vaccines allowed");
+        }
+      }
+
+      const validateInputs = async () => {
+        const firstNameValue = first_name.value.trim();
+        const lastNameValue = last_name.value.trim();
+        const idNumValue = id_num.value.trim();
+        const birthdateValue = birth_date.value.trim();
+        const cityValue = city.value.trim();
+        const streetValue = street.value.trim();
+        const houseNumValue = house_num.value.trim();
+        const housePhoneValue = house_phone.value.trim();
+        const cellphoneValue = cellphone.value.trim();
+        const sickStartValue = sick_start.value.trim();
+        const sickEndValue = sick_end.value.trim();
+
+        //for first and last name - they just need to exist
+        if(firstNameValue === ''){
+          setError(first_name, 'first name is required');
+        } else {
+          setSuccess(first_name);
+        }
+        if(lastNameValue === ''){
+          setError(last_name, 'last name is required');
+        } else {
+          setSuccess(last_name);
+        }
+        //id check - needs to be a number, be 9 digits long,
+        //  and the check digit needs to be compatible
+        if(idNumValue === ''){
+          setError(id_num, 'id is required');
+        } else if(!isNumber(idNumValue) || idNumValue.length !== 9){
+          setError(id_num, 'id needs to be a 9 digits number');
+        }else if(!isCheckDigitValid(idNumValue)){
+          setError(id_num, 'check digit is not compatible');
+        } else {
+          setSuccess(id_num);
+        }
+        //birtdate checker - see if the person was born already
+        let currentdatestring = curDate();
+        if(isDateABeforeDateB(currentdatestring, birthdateValue)){
+          setError(birth_date, 'you are not born yet!');
+        }else {
+          setSuccess(birth_date);
+        }
+        //house phone and cell phone checker - at leat one should exist
+        if(!validHousePhone(housePhoneValue) && !validcellphone(cellphoneValue)){
+          setError(cellphone, 'at least one phone number should be valid')
+        }else{
+          setSuccess(cellphone)
+        }
+        //check the vaccines dates in a loop - if invalid, set menufacturer to ba na
+
+        //sick start sucess - if exists, should be before today. same as birthday
+        if(sickStartValue && isDateABeforeDateB(currentdatestring, sickStartValue)){
+          setError(sick_start, 'start date of sickness can not be after current time');
+        }else {
+          setSuccess(sick_start);
+        }
+        //sick end sucess - if exists, should make sure sick start exists,
+        //  and that start is before end
+        if(!sickEndValue){
+          setSuccess(sick_end);
+        }else if(sickStartValue && isDateABeforeDateB(sickStartValue, sickEndValue)){
+          setSuccess(sick_end);
+        }else {
+          setError(sick_end, 'end date of sickness can not be before start day or when start day is not defined');
+        }
+
+        //check all divs
+
+        //create the vaccines array
+        const vaccines_table = document.getElementById('vaccines_table');
+        //let vaccinesArr = [];
+        //for()
+        //const size = vaccines_table.childElementCount;
+
+        const newReport = new CovidReport({
+          first_name: firstNameValue,
+          last_name: lastNameValue,
+          id_num: idNumValue,
+          birth_date: birthdateValue,
+          city: cityValue,
+          street: streetValue,
+          house_num: houseNumValue,
+          house_phone: housePhoneValue,
+          cellphone: cellphoneValue,
+          sick_start: sickStartValue,
+          sick_end:sickEndValue,
+          vaccines: vaccineTable.children
+        });
+        console.log(newReport);
+
+        try{
+          await newReport.save();
+          console.log('User saved successfully to MongoDB.');
+        }catch(error){
+          console.error('Error saving user to MongoDB:', error);
+        }
+      };
+
+    </script>
+
+    
+</body>
+</html>

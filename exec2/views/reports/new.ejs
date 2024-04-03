@@ -11,22 +11,20 @@
     <form id="covidForm" action="/">
         <div class="input-control">
           <lable for="first_name">First name:</lable>
-          <input type="text" name = "first_name" placeholder="type first name" id="first_name" required>
+          <input type="text" name = "first_name" placeholder="type first name" id="first_name">
           <div class="error"></div>
         </div>
         <div class="input-control">
           <lable for="last_name">Last name:</lable>
-          <input type="text" name = "last_name" placeholder="type last name" id="last_name" required>
+          <input type="text" name = "last_name" placeholder="type last name" id="last_name">
           <div class="error"></div>
         </div>
-        <!--insert the check digit logic here!-->
         <div class="input-control">
           <lable for="id_num">ID (9 digits):</lable>
-          <input type="text" name = "id_num" placeholder="123456789" id="id_num" required>
+          <input type="text" name = "id_num" placeholder="123456789" id="id_num">
           <span id="id_num-error" class="error"></span>
           <div class="error"></div>
         </div>
-         <!--insert the date check here! not later than current time, not before 200 years-->
         <div class="input-control">
           <lable for="birth_date">Date of birth:</lable>
           <input type="date" id="birth_date">
@@ -53,8 +51,6 @@
         </div>
 
         <h3>Contact info:</h3>
-        <!--insert the phone number logic here! check vallidity of phone number,
-            make sure that at leat one type was inserted-->
         <div class="input-control">
           <lable for="house_phone">Phone number:</lable>
           <input type="text" placeholder="type house phone" id="house_phone">
@@ -74,7 +70,6 @@
                 <th>Date</th>
                 <th>Manufacturer</th>
             </tr>
-            <!--Add rows as we go logic, if there is time. for now add 4 rows that are not required-->
             <!--the available vaccines types in Israel from https://corona.health.gov.il/vaccine-for-covid/-->
             <tr>
                 <td><input type="date" id="vaccine_date" name="vaccine_date" class="vaccines_row"></td>
@@ -89,13 +84,11 @@
         </table>
         <button type="button" onclick="addRow()">Add another vaccine</button>
         <h3>Sickness duration:</h3>
-        <!--insert the date logic here! - should be after birth-->
         <div class="input-control">
           <lable for="sick_start">First positive test date:</lable>
           <input type="date" name="sick_start" id="sick_start">
           <div class="error"></div>
         </div>
-        <!--insert the date logic here! - should be after sick start-->
         <div class="input-control">
           <lable for="sick_end">Recovery date (second negative test day):</lable>
           <input type="date" name="sick_end" id="sick_end">
@@ -122,12 +115,13 @@
       const sick_start = document.getElementById('sick_start');
       const sick_end = document.getElementById('sick_end');
 
+      //****************************************************************************
       //prevent the default submit behavior:
       form.addEventListener('submit', async e => {
         e.preventDefault();
-        validateInputs(); //update all divs sucess and errors
-        await handleSubmit();
+        await validateInputs();
       });
+      //****************************************************************************
 
       const setError = (element, message) => {
         const inputControl = element.parentElement;
@@ -227,7 +221,7 @@
         if(phoneValue.substring(0,4) === '+972'){
           fixedString = '0' + phoneValue.substring(4);
         }
-        //remove all '-' from the number (g just means global search)
+        //remove all '-' from the number (g just means global search, all occurrences of the char)
         const regex = new RegExp('-', 'g');
         fixedString = fixedString.replace(regex, '');
         //check if the remaining string is only numbers
@@ -336,6 +330,7 @@
         if(!validHousePhone(housePhoneValue) && !validcellphone(cellphoneValue)){
           setError(cellphone, 'at least one phone number should be valid')
         }else{
+          setSuccess(house_phone)
           setSuccess(cellphone)
         }
         //check the vaccines dates in a loop - if invalid, set menufacturer to ba na
@@ -356,15 +351,49 @@
           setError(sick_end, 'end date of sickness can not be before start day or when start day is not defined');
         }
 
-        //check all divs
-
         //create the vaccines array
+        let vaccinesData = [];
         const vaccines_table = document.getElementById('vaccines_table');
-        //let vaccinesArr = [];
-        //for()
-        //const size = vaccines_table.childElementCount;
 
-        const newReport = new CovidReport({
+        for (let i = 1; i < vaccines_table.rows.length; i++) {
+          let row = vaccines_table.rows[i];
+
+          // Find the input elements in the current row
+          let dateInput = row.cells[0].querySelector('input[type="date"]');
+          let manufacturerInput = row.cells[1].querySelector('select');
+
+          //if some data is missing - date or manufactureer - don't save it
+          if(!dateInput.value || manufacturerInput.value === "na")
+          {
+            console.log(`data number ${i} is useless`)
+            continue;
+          }
+
+          let vaccine = {
+            date: dateInput.value,
+            manufacturer: manufacturerInput.value
+          };
+
+          // Append the vaccine object to the vaccinesData array
+          vaccinesData.push(vaccine);
+        }
+
+        // Query for all div elements
+        const divElements = document.querySelectorAll('div');
+
+        // Iterate through each div element
+        for (let i = 0; i < divElements.length; i++) {
+          const div = divElements[i];
+          // Print the class list of each div element
+          //console.log(`div class list: ${div.classList}`);
+          if(div && div.classList.contains('input-control') && div.classList.contains('error'))
+          {
+            console.log('found a problematic input')
+            return;
+          }
+        };
+
+        const newReport = {
           first_name: firstNameValue,
           last_name: lastNameValue,
           id_num: idNumValue,
@@ -376,16 +405,18 @@
           cellphone: cellphoneValue,
           sick_start: sickStartValue,
           sick_end:sickEndValue,
-          vaccines: vaccineTable.children
-        });
+          vaccines: vaccinesData
+        };
+
         console.log(newReport);
 
-        try{
-          await newReport.save();
-          console.log('User saved successfully to MongoDB.');
-        }catch(error){
-          console.error('Error saving user to MongoDB:', error);
-        }
+        const response = await fetch('../../reports', {
+          method: 'POST',
+          headers: {
+          'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newReport)
+        });
       };
 
     </script>

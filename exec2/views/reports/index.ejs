@@ -9,8 +9,8 @@
     <h1>All reports!</h1>
     <ul>
         <% for(let report of reports) { %>
-            <%=console.log(report)%>
-            <li><%= report.first_name %></li>
+            <%console.log(report.id)%>
+            <li><a href="/reports/<%= report.id%>"><%= report.first_name %></a></li>
         <% } %>
     </ul>
 </body>

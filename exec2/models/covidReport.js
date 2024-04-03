@@ -39,7 +39,7 @@ const covidReportSchema = new mongoose.Schema({
     },
     sick_end: {
         type: Date
-    }
+    },
     vaccines: {
         type: [singleVaccineSchema]
     }
